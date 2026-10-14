@@ -4,3 +4,10 @@
 @media(max-width:1250px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar{min-width:225px;width:225px}.content{padding:22px}.grid-two{grid-template-columns:1fr}.hero-photo{width:29%}}
 @media(max-width:800px){.sidebar{position:fixed;transform:translateX(-105%);transition:transform .2s;width:260px;min-width:260px}.sidebar.open{transform:translateX(0)}.menu-toggle{display:block}.topbar{height:65px;padding:0 16px}.content{padding:17px}.hero-photo{display:none}.hero>div:first-child{padding:32px 24px}.section-heading{align-items:flex-start;flex-direction:column}.grid-two{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:17px}.login-page{grid-template-columns:1fr}.login-art{display:none}.top-search{width:auto;flex:1}.status-pill{display:none}}
 @media(max-width:520px){.kpi-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.form-grid .span-2{grid-column:auto}.bar-chart{gap:4px}.hero h2{font-size:.95rem}.modal{padding:15px}.actions{width:100%}.actions button{flex:1}}
+/* Steps 2–4: clear multiline labels, forms and download actions */
+.panel textarea { border:1px solid #dee1e4;border-radius:8px;padding:10px 12px;background:#fff;color:var(--ink);width:100%;resize:vertical }
+.panel .form-stack { margin-top:16px }
+.panel .form-stack label { display:flex;flex-direction:column;gap:7px;font-size:.8rem;font-weight:700 }
+.panel .form-stack label:has(input[type=checkbox]) {flex-direction:row;align-items:center}
+a.button {display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.panel .table-scroll small {font-size:.7rem;line-height:1.6;color:var(--muted)}

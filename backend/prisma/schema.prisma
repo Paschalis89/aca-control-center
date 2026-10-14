@@ -149,3 +149,104 @@ model AuditLog {
   createdAt DateTime @default(now())
   @@index([createdAt])
 }
+
+// STEP 2: a read-only financial mirror of Shopify. No customer PII is stored.
+model IntegrationState {
+  key String @id
+  lastSyncAt DateTime?
+  lastError String?
+  nextCursor String?
+  windowStart DateTime?
+  syncedOrders Int @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+model Partner {
+  id String @id @default(cuid())
+  name String
+  shopifyVendor String? @unique
+  crmReference String?
+  notes String?
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  products PartnerProduct[]
+}
+
+model PartnerProduct {
+  id String @id @default(cuid())
+  variantGid String @unique
+  productGid String?
+  label String
+  partnerId String
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  basePrice Decimal @db.Decimal(14,2)
+  currency String @default("EUR")
+  effectiveFrom DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommerceOrder {
+  gid String @id
+  name String
+  placedAt DateTime
+  modifiedAt DateTime
+  cancelledAt DateTime?
+  paymentStatus String
+  taxesIncluded Boolean @default(false)
+  hasDiscounts Boolean @default(false)
+  currency String
+  totalPrice Decimal @db.Decimal(14,2)
+  subtotalPrice Decimal @db.Decimal(14,2)
+  totalRefunded Decimal @db.Decimal(14,2)
+  syncedAt DateTime @default(now())
+  lines CommerceLine[]
+  @@index([placedAt])
+}
+
+model CommerceLine {
+  gid String @id
+  orderGid String
+  order CommerceOrder @relation(fields:[orderGid],references:[gid],onDelete:Cascade)
+  title String
+  vendor String?
+  variantGid String?
+  productGid String?
+  quantity Int
+  currentQuantity Int
+  lineAmount Decimal @db.Decimal(14,2)
+  refundAmount Decimal @default(0) @db.Decimal(14,2)
+  currency String
+  baseCostAtOrder Decimal? @db.Decimal(14,2)
+  partnerIdAtOrder String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([orderGid])
+  @@index([variantGid])
+}
+
+// STEP 3: budgets and results entered by the ACA team, never fabricated.
+model MarketingBudget {
+  id String @id @default(cuid())
+  year Int
+  month Int
+  channel String
+  planned Decimal @db.Decimal(14,2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([year,month,channel])
+}
+model MarketingCampaign {
+  id String @id @default(cuid())
+  name String
+  channel String
+  startDate DateTime
+  endDate DateTime?
+  spend Decimal @db.Decimal(14,2)
+  attributedOrders Int @default(0)
+  attributedRevenue Decimal @default(0) @db.Decimal(14,2)
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([startDate])
+}
