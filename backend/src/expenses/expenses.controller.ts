@@ -16,9 +16,9 @@ const dir=resolve(process.env.UPLOAD_DIR||'/app/uploads');
 const safeFile=(file:{mimetype:string}):boolean=>['application/pdf','image/png','image/jpeg'].includes(file.mimetype);
 @Controller('expenses')export class ExpensesController {
  constructor(private db:Db,private audit:Audit){}
- @Get() async list(@Query() q:any){const year=q.year?Number(q.year):undefined;const month=q.month?Number(q.month):undefined;
-  if(year&&(!Number.isInteger(year)||year<2020||year>2100))throw new BadRequestException('Invalid year');
-  if(month&&(!Number.isInteger(month)||month<1||month>12))throw new BadRequestException('Invalid month');
+ @Get() async list(@Query() q:any){const year=q.year===undefined?undefined:Number(q.year);const month=q.month===undefined?undefined:Number(q.month);
+  if(year!==undefined&&(!Number.isInteger(year)||year<2020||year>2100))throw new BadRequestException('Invalid year');
+  if(month!==undefined&&(!Number.isInteger(month)||month<1||month>12))throw new BadRequestException('Invalid month');
   const start=year?new Date(Date.UTC(year,(month||1)-1,1)):undefined,end=year?new Date(Date.UTC(year,month||12,1)):undefined;
   const where:any={deletedAt:null}; if(year)where.expenseDate={gte:start,lt:end};if(q.status)where.status=q.status;if(q.category)where.category=q.category;
   if(q.search)where.OR=[{title:{contains:String(q.search),mode:'insensitive'}},{supplier:{contains:String(q.search),mode:'insensitive'}}];
