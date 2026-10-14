@@ -1,11 +1,35 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
-enum UserRole { ADMIN BUSINESS_MANAGER }
-enum ExpenseStatus { PLANNED PENDING PAID CANCELLED }
-enum Frequency { MONTHLY YEARLY }
-enum PlanStatus { DRAFT APPROVED ARCHIVED }
-enum Scenario { PRUDENTE CENTRALE FAVOREVOLE }
+enum UserRole {
+  ADMIN
+  BUSINESS_MANAGER
+}
+enum ExpenseStatus {
+  PLANNED
+  PENDING
+  PAID
+  CANCELLED
+}
+enum Frequency {
+  MONTHLY
+  YEARLY
+}
+enum PlanStatus {
+  DRAFT
+  APPROVED
+  ARCHIVED
+}
+enum Scenario {
+  PRUDENTE
+  CENTRALE
+  FAVOREVOLE
+}
 
 model User {
   id String @id @default(cuid())
