@@ -13,7 +13,7 @@ import {z} from 'zod';
 const when=(s?:string|null)=>s?new Date(s+'T12:00:00Z'):null;
 const calc=(base:number,rate:number)=>({netAmount:base,vatRate:rate,vatAmount:Math.round(base*rate)/100,grossAmount:Math.round(base*(1+rate/100)*100)/100});
 const dir=resolve(process.env.UPLOAD_DIR||'/app/uploads');
-const safeFile=(file:Express.Multer.File)=>['application/pdf','image/png','image/jpeg'].includes(file.mimetype);
+const safeFile=(file:{mimetype:string}):boolean=>['application/pdf','image/png','image/jpeg'].includes(file.mimetype);
 @Controller('expenses')export class ExpensesController {
  constructor(private db:Db,private audit:Audit){}
  @Get() async list(@Query() q:any){const year=q.year?Number(q.year):undefined;const month=q.month?Number(q.month):undefined;

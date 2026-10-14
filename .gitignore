@@ -8,3 +8,6 @@
 .DS_Store
 *.sqlite
 __pycache__/
+# Private Traefik authentication and ACME state
+/deploy/traefik/users.htpasswd
+/deploy/traefik/acme/
