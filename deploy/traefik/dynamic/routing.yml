@@ -6,15 +6,10 @@ http:
         - websecure
       service: aca-frontend
       middlewares:
-        - aca-gateway-auth
         - aca-security-headers
       tls:
         certResolver: letsencrypt
   middlewares:
-    aca-gateway-auth:
-      basicAuth:
-        usersFile: /etc/traefik/users.htpasswd
-        removeHeader: true
     aca-security-headers:
       headers:
         stsSeconds: 31536000
