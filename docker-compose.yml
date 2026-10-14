@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?configure}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?configure}
+      POSTGRES_DB: ${POSTGRES_DB:-aca_control}
+    volumes:
+      - aca_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-aca_control}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [private]
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-aca_control}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?configure}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?configure}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - aca_receipts:/app/uploads
+    networks: [private]
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on: [backend]
+    ports:
+      - "127.0.0.1:8085:80"
+    networks: [private]
+  seed:
+    build: ./backend
+    profiles: [setup]
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-aca_control}?schema=public
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?configure}
+      ADMIN_NAME: ${ADMIN_NAME:-ACA Administrator}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?configure}
+    command: ["node_modules/.bin/tsx", "prisma/seed.ts"]
+    networks: [private]
+networks:
+  private: {}
+volumes:
+  aca_postgres: {}
+  aca_receipts: {}

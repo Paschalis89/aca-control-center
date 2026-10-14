@@ -1,0 +1,127 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+enum UserRole { ADMIN BUSINESS_MANAGER }
+enum ExpenseStatus { PLANNED PENDING PAID CANCELLED }
+enum Frequency { MONTHLY YEARLY }
+enum PlanStatus { DRAFT APPROVED ARCHIVED }
+enum Scenario { PRUDENTE CENTRALE FAVOREVOLE }
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String
+  passwordHash String
+  role UserRole @default(BUSINESS_MANAGER)
+  active Boolean @default(true)
+  tokenVersion Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  audits AuditLog[]
+}
+model Expense {
+  id String @id @default(cuid())
+  title String
+  category String
+  supplier String?
+  notes String?
+  netAmount Decimal @db.Decimal(14,2)
+  vatRate Decimal @default(0) @db.Decimal(6,2)
+  vatAmount Decimal @default(0) @db.Decimal(14,2)
+  grossAmount Decimal @db.Decimal(14,2)
+  currency String @default("EUR")
+  expenseDate DateTime
+  dueDate DateTime?
+  paidAt DateTime?
+  status ExpenseStatus @default(PENDING)
+  recurringId String?
+  recurring RecurringExpense? @relation(fields:[recurringId], references:[id],onDelete:SetNull)
+  occurrenceKey String?
+  receiptName String?
+  receiptPath String?
+  receiptMime String?
+  createdById String
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([recurringId,occurrenceKey])
+  @@index([expenseDate,deletedAt])
+  @@index([category,status])
+}
+model RecurringExpense {
+  id String @id @default(cuid())
+  title String
+  category String
+  supplier String?
+  notes String?
+  netAmount Decimal @db.Decimal(14,2)
+  vatRate Decimal @default(0) @db.Decimal(6,2)
+  currency String @default("EUR")
+  frequency Frequency
+  startDate DateTime
+  endDate DateTime?
+  active Boolean @default(true)
+  createdById String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expenses Expense[]
+}
+model ForecastPlan {
+  id String @id @default(cuid())
+  name String
+  notes String?
+  version Int @default(1)
+  status PlanStatus @default(DRAFT)
+  parentId String?
+  startYear Int
+  endYear Int
+  createdById String
+  approvedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  years ForecastYear[]
+  @@index([status,createdAt])
+}
+model ForecastYear {
+  id String @id @default(cuid())
+  planId String
+  plan ForecastPlan @relation(fields:[planId],references:[id],onDelete:Cascade)
+  scenario Scenario
+  year Int
+  partners Int
+  orders Int
+  basePrice Decimal @db.Decimal(12,2)
+  markup Decimal @db.Decimal(6,4)
+  variablePerOrder Decimal @db.Decimal(12,2)
+  marketingMonthly Decimal @db.Decimal(12,2)
+  designerMonthly Decimal @db.Decimal(12,2)
+  toolsMonthly Decimal @db.Decimal(12,2)
+  adminMonthly Decimal @db.Decimal(12,2)
+  advertisingAnnual Decimal @db.Decimal(14,2)
+  contractorsAnnual Decimal @db.Decimal(14,2)
+  employeesAnnual Decimal @db.Decimal(14,2)
+  investmentsAnnual Decimal @default(0) @db.Decimal(14,2)
+  otherRevenueAnnual Decimal @default(0) @db.Decimal(14,2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([planId,scenario,year])
+}
+model WorkspaceSetting {
+  id String @id @default("main")
+  companyName String @default("Amalfi Coast Artistry")
+  currency String @default("EUR")
+  fiscalYearStartMonth Int @default(1)
+  currentPlanId String?
+  updatedAt DateTime @updatedAt
+}
+model AuditLog {
+  id String @id @default(cuid())
+  actorId String?
+  actor User? @relation(fields:[actorId],references:[id],onDelete:SetNull)
+  action String
+  entity String
+  entityId String?
+  detail Json?
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
